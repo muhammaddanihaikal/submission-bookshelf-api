@@ -36,8 +36,8 @@ const addBookHandler = (request, h) => {
 
   // membuat value dari properti selain request body
   const id = nanoid(16);
-  const createdAt = new Date().toISOString();
-  const updatedAt = createdAt;
+  const insertedAt = new Date().toISOString();
+  const updatedAt = insertedAt;
   const finished = pageCount === readPage;
 
   //   buat object buku baru
@@ -52,7 +52,7 @@ const addBookHandler = (request, h) => {
     readPage,
     finished,
     reading,
-    createdAt,
+    insertedAt,
     updatedAt,
   };
 
@@ -84,13 +84,19 @@ const addBookHandler = (request, h) => {
   return response;
 };
 
-const getAllBooksHandler = (request, h) => ({
-  // langsung kirim object
-  status: "success",
-  data: {
-    books,
-  },
-});
+const getAllBooksHandler = (request, h) => {
+  const filteredBooks = books.map(({ id, name, publisher }) => ({
+    id,
+    name,
+    publisher,
+  }));
+  return {
+    status: "success",
+    data: {
+      books: filteredBooks,
+    },
+  };
+};
 
 const getBookByIdHandler = (request, h) => {
   // ambil id dari params
