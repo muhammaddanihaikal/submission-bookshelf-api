@@ -87,16 +87,7 @@ const addBookHandler = (request, h) => {
 const getAllBooksHandler = (request, h) => {
   const { name, reading, finished } = request.query;
 
-  //
-  let filteredBooks = books.map(
-    ({ id, name, publisher, reading, finished }) => ({
-      id,
-      name,
-      publisher,
-      reading,
-      finished,
-    })
-  );
+  let filteredBooks = books;
 
   // query parameter ?name
   if (name) {
@@ -118,6 +109,14 @@ const getAllBooksHandler = (request, h) => {
   } else if (finished === "1") {
     filteredBooks = filteredBooks.filter((book) => book.finished);
   }
+
+  //
+  filteredBooks = filteredBooks.map(({ id, name, publisher }) => ({
+    id,
+    name,
+    publisher,
+  }));
+
   return {
     status: "success",
     data: {
