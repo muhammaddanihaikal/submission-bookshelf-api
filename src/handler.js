@@ -2,7 +2,6 @@ const { nanoid } = require("nanoid");
 const books = require("./books");
 
 const addBookHandler = (request, h) => {
-  // ambil data dari request body
   const {
     name,
     year,
@@ -14,7 +13,7 @@ const addBookHandler = (request, h) => {
     reading,
   } = request.payload;
 
-  // validasi : jika client tidak melampirkan properti 'name'
+  // validasi : client tidak mengisi properti 'name' pada request body
   if (!name) {
     const response = h.response({
       status: "fail",
@@ -23,7 +22,8 @@ const addBookHandler = (request, h) => {
     response.code(400);
     return response;
   }
-  // validasi : jika client memasukkan nilai 'readPage' lebih besar dari pada nilai 'pageCount'
+
+  // validasi : client mengisikan value 'readPage' lebih besar dari value 'pageCount' pada request body
   if (readPage > pageCount) {
     const response = h.response({
       status: "fail",
@@ -34,13 +34,11 @@ const addBookHandler = (request, h) => {
     return response;
   }
 
-  // membuat value dari properti selain request body
   const id = nanoid(16);
   const insertedAt = new Date().toISOString();
   const updatedAt = insertedAt;
   const finished = pageCount === readPage;
 
-  //   buat object buku baru
   const newBook = {
     id,
     name,
@@ -56,13 +54,12 @@ const addBookHandler = (request, h) => {
     updatedAt,
   };
 
-  // masukkan buku baru kedalam array
   books.push(newBook);
 
-  // validasi : jika buku masuk kedalam array
+  // validasi : buku berhasil masuk kedalam array
   const isSuccess = books.filter((book) => book.id === id).length > 0;
 
-  // kalo buku masuk
+  // resonse success
   if (isSuccess) {
     const response = h.response({
       status: "success",
@@ -75,7 +72,7 @@ const addBookHandler = (request, h) => {
     return response;
   }
 
-  // kalo buku ga masuk
+  // response gagal
   const response = h.response({
     status: "fail",
     message: "Buku gagal ditambahkan",
@@ -89,34 +86,35 @@ const getAllBooksHandler = (request, h) => {
 
   let filteredBooks = books;
 
-  // query parameter ?name
+  // validasi : user memasukkan query parameter '?name' pada request url
   if (name) {
     filteredBooks = filteredBooks.filter((book) =>
       book.name.toLowerCase().includes(name.toLowerCase())
     );
   }
 
-  // query parameter ?reading
+  // validasi : user memasukkan query parameter '?reading' pada request url
   if (reading === "0") {
     filteredBooks = filteredBooks.filter((book) => !book.reading);
   } else if (reading === "1") {
     filteredBooks = filteredBooks.filter((book) => book.reading);
   }
 
-  // query parameter ?finished
+  // validasi : user memasukkan query parameter '?finished' pada request url
   if (finished === "0") {
     filteredBooks = filteredBooks.filter((book) => !book.finished);
   } else if (finished === "1") {
     filteredBooks = filteredBooks.filter((book) => book.finished);
   }
 
-  //
+  // mengembalikan 3 properti saja : id, name, publisher
   filteredBooks = filteredBooks.map(({ id, name, publisher }) => ({
     id,
     name,
     publisher,
   }));
 
+  // response success
   return {
     status: "success",
     data: {
@@ -126,14 +124,14 @@ const getAllBooksHandler = (request, h) => {
 };
 
 const getBookByIdHandler = (request, h) => {
-  // ambil id dari params
   const { id } = request.params;
 
-  // cek apakah id tersebut ada di dalam array
+  // pengecekan buku berdasarkan id
   const book = books.filter((book) => id === book.id)[0];
 
-  // kalo buku ada
+  // validasi : buku ada pada array
   if (book !== undefined) {
+    // response success
     const response = h.response({
       status: "success",
       data: {
@@ -144,7 +142,7 @@ const getBookByIdHandler = (request, h) => {
     return response;
   }
 
-  // kalo buku ngga ada
+  // response gagal
   const response = h.response({
     status: "fail",
     message: "Buku tidak ditemukan",
@@ -154,10 +152,8 @@ const getBookByIdHandler = (request, h) => {
 };
 
 const editBookByIdHandler = (request, h) => {
-  // ambil id dari params
   const { id } = request.params;
 
-  // ambil data dari request body
   const {
     name,
     year,
@@ -169,7 +165,7 @@ const editBookByIdHandler = (request, h) => {
     reading,
   } = request.payload;
 
-  // validasi : jika client tidak mengisi properti name
+  // validasi : client tidak memasukkan properti 'name' pada request body
   if (!name) {
     const response = h.response({
       status: "fail",
@@ -179,7 +175,7 @@ const editBookByIdHandler = (request, h) => {
     return response;
   }
 
-  // validasi : jika client mengisi properti readPage tetapi nilainya lebih dari properti pageCount
+  // validasi : client mengisikan value 'readPage' lebih besar dari value 'pageCount' pada request body
   if (readPage > pageCount) {
     const response = h.response({
       status: "fail",
@@ -190,10 +186,10 @@ const editBookByIdHandler = (request, h) => {
     return response;
   }
 
-  // cari id di array
+  // cari index berdasarkan id
   const index = books.findIndex((book) => id === book.id);
 
-  // validasi : jika id tidak ada didalam array
+  // validasi : buku tidak ditemukan dalam array
   if (index === -1) {
     const response = h.response({
       status: "fail",
@@ -205,7 +201,7 @@ const editBookByIdHandler = (request, h) => {
 
   const updatedAt = new Date().toISOString();
 
-  // data ditimpa dengan yang baru
+  // updata data buku
   books[index] = {
     ...books[index],
     name,
@@ -219,7 +215,7 @@ const editBookByIdHandler = (request, h) => {
     updatedAt,
   };
 
-  // berikan response kalau buku sudah diedit
+  // response success
   const response = h.response({
     status: "success",
     message: "Buku berhasil diperbarui",
@@ -229,13 +225,12 @@ const editBookByIdHandler = (request, h) => {
 };
 
 const deleteBookByIdHandler = (request, h) => {
-  // ambil id dari requst params
   const { id } = request.params;
 
-  // cari index sesuai dengan id
+  // cari index berdasarkan id
   const index = books.findIndex((book) => id === book.id);
 
-  // validasi : jika id yang dicari tidak ada
+  // validasi : buku tidak ditemukan di array
   if (index === -1) {
     const response = h.response({
       status: "fail",
@@ -245,11 +240,10 @@ const deleteBookByIdHandler = (request, h) => {
     return response;
   }
 
-  // jika id yang dicari ada
-  // hapus data dengan method splice()
+  // hapus buku berdasarkan index
   books.splice(index, 1);
 
-  // berikan respon
+  // response succes
   const response = h.response({
     status: "success",
     message: "Buku berhasil dihapus",

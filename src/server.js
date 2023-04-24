@@ -12,8 +12,6 @@ const init = async () => {
     },
   });
 
-  // kode lainnya
-
   server.route(routes);
 
   await server.start();
